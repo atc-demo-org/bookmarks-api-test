@@ -29,6 +29,40 @@ describe('Bookmarks API', () => {
     expect(res.body[0].title).toBe('B');
   });
 
+  it('filters by tag (case-insensitive match)', async () => {
+    await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://a.com', title: 'A', tags: ['TypeScript'] });
+    await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://b.com', title: 'B', tags: ['javascript'] });
+    const res = await request(app).get('/bookmarks?tag=typescript');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].title).toBe('A');
+  });
+
+  it('returns empty array when no bookmark matches the tag', async () => {
+    await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://a.com', title: 'A', tags: ['go'] });
+    const res = await request(app).get('/bookmarks?tag=rust');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(0);
+  });
+
+  it('returns all bookmarks when tag param is omitted', async () => {
+    await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://a.com', title: 'A', tags: ['foo'] });
+    await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://b.com', title: 'B', tags: ['bar'] });
+    const res = await request(app).get('/bookmarks');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+  });
+
   it('fetches a bookmark by id', async () => {
     const created = await request(app)
       .post('/bookmarks')

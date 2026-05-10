@@ -12,8 +12,9 @@ bookmarksRouter.post('/', (req, res) => {
   return res.status(201).json(bookmark);
 });
 
-bookmarksRouter.get('/', (_req, res) => {
-  res.json(store.listBookmarks());
+bookmarksRouter.get('/', (req, res) => {
+  const { tag } = req.query;
+  res.json(store.listBookmarks(typeof tag === 'string' ? tag : undefined));
 });
 
 bookmarksRouter.get('/:id', (req, res) => {

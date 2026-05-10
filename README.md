@@ -17,11 +17,11 @@ npm test
 ## 엔드포인트
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST   | `/bookmarks`     | 생성 |
-| GET    | `/bookmarks`     | 목록 (newest first) |
-| GET    | `/bookmarks/:id` | 단건 조회 |
-| DELETE | `/bookmarks/:id` | 삭제 |
-| GET    | `/health`        | 헬스체크 |
+| POST   | `/bookmarks`           | 생성 |
+| GET    | `/bookmarks`           | 목록 (newest first); `?tag=<tag>` 쿼리로 태그 필터링 가능 (대소문자 무시) |
+| GET    | `/bookmarks/:id`       | 단건 조회 |
+| DELETE | `/bookmarks/:id`       | 삭제 |
+| GET    | `/health`              | 헬스체크 |
 
 요청 스키마 (POST):
 ```json
