@@ -31,9 +31,9 @@ jobs:
 
       - name: Generate summary
         id: ai
-        uses: actions/ai-inference@v2
+        uses: actions/ai-inference@v1
         with:
-          model: openai/gpt-4o-mini
+          model: openai/gpt-4.1
           system-prompt: |
             너는 코드 리뷰 도우미야. PR diff를 받아 한국어로 변경사항 요약을 작성해.
             형식:
