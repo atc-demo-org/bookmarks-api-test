@@ -1,0 +1,58 @@
+name: PR Summary by AI
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect diff
+        id: diff
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git diff "origin/${{ github.base_ref }}...HEAD" --unified=1 > /tmp/diff.txt
+          {
+            echo "text<<DIFF_EOF"
+            head -c 16000 /tmp/diff.txt
+            echo
+            echo DIFF_EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate summary
+        id: ai
+        uses: actions/ai-inference@v2
+        with:
+          model: openai/gpt-4o-mini
+          system-prompt: |
+            너는 코드 리뷰 도우미야. PR diff를 받아 한국어로 변경사항 요약을 작성해.
+            형식:
+            - 불릿 3-5개
+            - 변경된 파일별 핵심 의도와 영향 범위
+            - 누락 가능성이 있는 테스트가 있다면 끝에 "⚠️ 테스트 보강 권장"을 한 줄 추가
+          prompt: ${{ steps.diff.outputs.text }}
+
+      - name: Post comment
+        uses: actions/github-script@v7
+        env:
+          AI_RESPONSE: ${{ steps.ai.outputs.response }}
+        with:
+          script: |
+            const ai = process.env.AI_RESPONSE || '(빈 응답)';
+            const body = `## 🤖 AI 변경 요약\n\n${ai}\n\n_actions/ai-inference로 자동 생성_`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
