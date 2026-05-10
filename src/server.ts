@@ -1,10 +1,12 @@
 import express from 'express';
 import { bookmarksRouter } from './routes/bookmarks';
+import { previewRouter } from './routes/preview';
 
 export const app = express();
 
 app.use(express.json());
 app.use('/bookmarks', bookmarksRouter);
+app.use('/preview', previewRouter);
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
