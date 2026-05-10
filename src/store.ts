@@ -15,10 +15,15 @@ export function createBookmark(input: CreateBookmarkInput): Bookmark {
   return bookmark;
 }
 
-export function listBookmarks(): Bookmark[] {
-  return Array.from(bookmarks.values()).sort((a, b) =>
-    a.createdAt < b.createdAt ? 1 : -1,
-  );
+export function listBookmarks(tag?: string): Bookmark[] {
+  let items = Array.from(bookmarks.values());
+  if (tag !== undefined) {
+    const lower = tag.toLowerCase();
+    items = items.filter((b) =>
+      b.tags.some((t) => t.toLowerCase() === lower),
+    );
+  }
+  return items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
 export function getBookmark(id: string): Bookmark | undefined {
