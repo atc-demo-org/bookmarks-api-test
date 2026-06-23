@@ -11,3 +11,8 @@ export interface CreateBookmarkInput {
   title: string;
   tags?: string[];
 }
+
+export interface UpdateBookmarkInput {
+  title?: string;
+  tags?: string[];
+}

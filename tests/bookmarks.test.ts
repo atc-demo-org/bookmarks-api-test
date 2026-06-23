@@ -106,4 +106,73 @@ describe('Bookmarks API', () => {
     const fetched = await request(app).get(`/bookmarks/${created.body.id}`);
     expect(fetched.status).toBe(404);
   });
+
+  describe('PATCH /bookmarks/:id', () => {
+    it('updates title and tags', async () => {
+      const created = await request(app)
+        .post('/bookmarks')
+        .send({ url: 'https://example.com', title: 'Original', tags: ['a'] });
+      const res = await request(app)
+        .patch(`/bookmarks/${created.body.id}`)
+        .send({ title: 'Updated', tags: ['b', 'c'] });
+      expect(res.status).toBe(200);
+      expect(res.body.title).toBe('Updated');
+      expect(res.body.tags).toEqual(['b', 'c']);
+      expect(res.body.url).toBe('https://example.com');
+      expect(res.body.id).toBe(created.body.id);
+      expect(res.body.createdAt).toBe(created.body.createdAt);
+    });
+
+    it('partially updates only title', async () => {
+      const created = await request(app)
+        .post('/bookmarks')
+        .send({ url: 'https://example.com', title: 'Original', tags: ['keep'] });
+      const res = await request(app)
+        .patch(`/bookmarks/${created.body.id}`)
+        .send({ title: 'New Title' });
+      expect(res.status).toBe(200);
+      expect(res.body.title).toBe('New Title');
+      expect(res.body.tags).toEqual(['keep']);
+    });
+
+    it('partially updates only tags', async () => {
+      const created = await request(app)
+        .post('/bookmarks')
+        .send({ url: 'https://example.com', title: 'Keep Title', tags: ['old'] });
+      const res = await request(app)
+        .patch(`/bookmarks/${created.body.id}`)
+        .send({ tags: ['new'] });
+      expect(res.status).toBe(200);
+      expect(res.body.title).toBe('Keep Title');
+      expect(res.body.tags).toEqual(['new']);
+    });
+
+    it('returns 404 for unknown id', async () => {
+      const res = await request(app)
+        .patch('/bookmarks/does-not-exist')
+        .send({ title: 'x' });
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('not found');
+    });
+
+    it('returns 400 when title is not a string', async () => {
+      const created = await request(app)
+        .post('/bookmarks')
+        .send({ url: 'https://example.com', title: 'Original' });
+      const res = await request(app)
+        .patch(`/bookmarks/${created.body.id}`)
+        .send({ title: 123 });
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when tags is not an array', async () => {
+      const created = await request(app)
+        .post('/bookmarks')
+        .send({ url: 'https://example.com', title: 'Original' });
+      const res = await request(app)
+        .patch(`/bookmarks/${created.body.id}`)
+        .send({ tags: 'not-an-array' });
+      expect(res.status).toBe(400);
+    });
+  });
 });

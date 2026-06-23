@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Bookmark, CreateBookmarkInput } from './types';
+import { Bookmark, CreateBookmarkInput, UpdateBookmarkInput } from './types';
 
 const bookmarks = new Map<string, Bookmark>();
 
@@ -32,6 +32,18 @@ export function getBookmark(id: string): Bookmark | undefined {
 
 export function deleteBookmark(id: string): boolean {
   return bookmarks.delete(id);
+}
+
+export function updateBookmark(
+  id: string,
+  input: UpdateBookmarkInput,
+): Bookmark | undefined {
+  const bookmark = bookmarks.get(id);
+  if (!bookmark) return undefined;
+  if (input.title !== undefined) bookmark.title = input.title;
+  if (input.tags !== undefined) bookmark.tags = input.tags;
+  bookmarks.set(id, bookmark);
+  return bookmark;
 }
 
 export function clearAll(): void {

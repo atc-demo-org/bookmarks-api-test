@@ -54,3 +54,16 @@ bookmarksRouter.delete('/:id', (req, res) => {
   if (!ok) return res.status(404).json({ error: 'not found' });
   res.status(204).send();
 });
+
+bookmarksRouter.patch('/:id', (req, res) => {
+  const { title, tags } = req.body ?? {};
+  if (title !== undefined && typeof title !== 'string') {
+    return res.status(400).json({ error: 'title must be a string' });
+  }
+  if (tags !== undefined && !Array.isArray(tags)) {
+    return res.status(400).json({ error: 'tags must be an array' });
+  }
+  const updated = store.updateBookmark(req.params.id, { title, tags });
+  if (!updated) return res.status(404).json({ error: 'not found' });
+  return res.json(updated);
+});
