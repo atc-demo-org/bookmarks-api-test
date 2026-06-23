@@ -20,6 +20,7 @@ npm test
 | POST   | `/bookmarks`           | 생성 |
 | GET    | `/bookmarks`           | 목록 (newest first); `?tag=<tag>` 쿼리로 태그 필터링 가능 (대소문자 무시) |
 | GET    | `/bookmarks/:id`       | 단건 조회 |
+| PATCH  | `/bookmarks/:id`       | 부분 수정 (title·tags) |
 | DELETE | `/bookmarks/:id`       | 삭제 |
 | GET    | `/health`              | 헬스체크 |
 
