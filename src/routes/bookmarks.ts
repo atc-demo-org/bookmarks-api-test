@@ -56,12 +56,22 @@ bookmarksRouter.delete('/:id', (req, res) => {
 });
 
 bookmarksRouter.patch('/:id', (req, res) => {
-  const { title, tags } = req.body ?? {};
+  if (req.body === null || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).json({ error: 'body must be an object' });
+  }
+
+  const { title, tags } = req.body as { title?: unknown; tags?: unknown };
+  if (title === undefined && tags === undefined) {
+    return res.status(400).json({ error: 'title or tags is required' });
+  }
   if (title !== undefined && typeof title !== 'string') {
     return res.status(400).json({ error: 'title must be a string' });
   }
-  if (tags !== undefined && !Array.isArray(tags)) {
-    return res.status(400).json({ error: 'tags must be an array' });
+  if (
+    tags !== undefined &&
+    (!Array.isArray(tags) || !tags.every((t) => typeof t === 'string'))
+  ) {
+    return res.status(400).json({ error: 'tags must be an array of strings' });
   }
   const updated = store.updateBookmark(req.params.id, { title, tags });
   if (!updated) return res.status(404).json({ error: 'not found' });
