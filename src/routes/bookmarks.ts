@@ -49,6 +49,24 @@ bookmarksRouter.get('/:id', (req, res) => {
   res.json(bookmark);
 });
 
+bookmarksRouter.patch('/:id', (req, res) => {
+  const { title, tags } = req.body ?? {};
+  if (title !== undefined && typeof title !== 'string') {
+    return res.status(400).json({ error: 'title must be a string' });
+  }
+  if (tags !== undefined && !Array.isArray(tags)) {
+    return res.status(400).json({ error: 'tags must be an array' });
+  }
+
+  const updates = {
+    ...(title !== undefined ? { title } : {}),
+    ...(tags !== undefined ? { tags } : {}),
+  };
+  const bookmark = store.updateBookmark(req.params.id, updates);
+  if (!bookmark) return res.status(404).json({ error: 'not found' });
+  return res.status(200).json(bookmark);
+});
+
 bookmarksRouter.delete('/:id', (req, res) => {
   const ok = store.deleteBookmark(req.params.id);
   if (!ok) return res.status(404).json({ error: 'not found' });
