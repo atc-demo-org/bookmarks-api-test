@@ -30,6 +30,18 @@ export function getBookmark(id: string): Bookmark | undefined {
   return bookmarks.get(id);
 }
 
+export function updateBookmark(
+  id: string,
+  updates: Partial<Pick<Bookmark, 'title' | 'tags'>>,
+): Bookmark | undefined {
+  const bookmark = bookmarks.get(id);
+  if (!bookmark) return undefined;
+
+  const updatedBookmark = { ...bookmark, ...updates };
+  bookmarks.set(id, updatedBookmark);
+  return updatedBookmark;
+}
+
 export function deleteBookmark(id: string): boolean {
   return bookmarks.delete(id);
 }

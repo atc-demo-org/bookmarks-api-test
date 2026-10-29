@@ -97,6 +97,66 @@ describe('Bookmarks API', () => {
     expect(res.status).toBe(404);
   });
 
+  it('updates a bookmark title and tags while preserving immutable fields', async () => {
+    const created = await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://example.com', title: 'Example', tags: ['old'] });
+    const res = await request(app)
+      .patch(`/bookmarks/${created.body.id}`)
+      .send({
+        title: 'Updated',
+        tags: ['new'],
+        id: 'changed',
+        url: 'https://other.example',
+        createdAt: 'changed',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ...created.body,
+      title: 'Updated',
+      tags: ['new'],
+    });
+  });
+
+  it('updates only the supplied bookmark field', async () => {
+    const created = await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://example.com', title: 'Example', tags: ['original'] });
+    const res = await request(app)
+      .patch(`/bookmarks/${created.body.id}`)
+      .send({ title: 'Updated' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('Updated');
+    expect(res.body.tags).toEqual(['original']);
+  });
+
+  it('returns 404 when updating an unknown bookmark', async () => {
+    const res = await request(app)
+      .patch('/bookmarks/does-not-exist')
+      .send({ title: 'Updated' });
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'not found' });
+  });
+
+  it('rejects invalid title and tags values', async () => {
+    const created = await request(app)
+      .post('/bookmarks')
+      .send({ url: 'https://example.com', title: 'Example' });
+
+    const invalidTitle = await request(app)
+      .patch(`/bookmarks/${created.body.id}`)
+      .send({ title: 123 });
+    const invalidTags = await request(app)
+      .patch(`/bookmarks/${created.body.id}`)
+      .send({ tags: 'not-an-array' });
+
+    expect(invalidTitle.status).toBe(400);
+    expect(invalidTags.status).toBe(400);
+  });
+
   it('deletes a bookmark', async () => {
     const created = await request(app)
       .post('/bookmarks')
